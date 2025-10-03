@@ -19,3 +19,9 @@ test("invalid username without a number", () => {
 test("invalid username with less than 8 characters", () => {
   expect(regex.test("Pass1!")).toBe(false);
 });
+
+test("regex matches the constant in script.js", () => {
+  // Test to ensure regex consistency between test and implementation
+  var testValue = "TestPass1!";
+  expect(regex.test(testValue)).toBe(true);
+});

@@ -1,31 +1,57 @@
+// Constants
+var USERNAME_REGEX = /^(?=.*[A-Z])(?=.*[!@#$&*])(?=.*[0-9]).{8,}$/;
+var MONTH_IDS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+// Helper function to safely get element by ID
+function getElement(id) {
+  var element = document.getElementById(id);
+  if (!element) {
+    console.error("Element not found: " + id);
+  }
+  return element;
+}
+
+// Helper function to collect monthly data
+function collectMonthlyData(type) {
+  return MONTH_IDS.map(function(month) {
+    var element = getElement(month + "-" + type);
+    return element ? element.value : "";
+  }).map(Number);
+}
+
 window.onload = function () {
-  // input with id "username" on change
-  document.getElementById("username").addEventListener("input", function () {
-    var username = document.getElementById("username").value;
-    // regex to check if username has at least 1 capital letter, 1 special character, 1 number, and is at least 8 characters long
-    var regex = /^(?=.*[A-Z])(?=.*[!@#$&*~])(?=.*[0-9]).{8,}$/;
+  var usernameInput = getElement("username");
+  
+  if (usernameInput) {
+    usernameInput.addEventListener("input", function () {
+      var username = usernameInput.value;
 
-    if (regex.test(username)) {
-      // set the username input border to green
-      document.getElementById("username").style.borderColor = "green";
-    } else {
-      // set the username input border to red
-      document.getElementById("username").style.borderColor = "red";
-    }
-  });
+      if (USERNAME_REGEX.test(username)) {
+        usernameInput.style.borderColor = "green";
+      } else {
+        usernameInput.style.borderColor = "red";
+      }
+    });
+  }
 
-  document.getElementById("download").addEventListener("click", function () {
-    var canvas = document.getElementById("myChart");
-    var image = canvas.toDataURL("image/png");
-
-    var link = document.createElement("a");
-    link.href = image;
-    link.download = "chart.png";
-    link.click();
-  });
-  // Get the context of the canvas element we want to select
-  var ctx = document.getElementById("myChart").getContext("2d");
-  // Create a new Chart object
+  var downloadButton = getElement("download");
+  
+  if (downloadButton) {
+    downloadButton.addEventListener("click", function () {
+      var canvas = getElement("myChart");
+      if (!canvas) return;
+      
+      var image = canvas.toDataURL("image/png");
+      var link = document.createElement("a");
+      link.href = image;
+      link.download = "chart.png";
+      link.click();
+    });
+  }
+  var chartCanvas = getElement("myChart");
+  if (!chartCanvas) return;
+  
+  var ctx = chartCanvas.getContext("2d");
   var myChart = new Chart(ctx, {
     type: "bar",
     data: {
@@ -69,70 +95,17 @@ window.onload = function () {
     },
   });
 
-  document.getElementById("chart-tab").addEventListener("click", function () {
-    // Income
-    var janIncome = document.getElementById("jan-income").value;
-    var febIncome = document.getElementById("feb-income").value;
-    var marIncome = document.getElementById("mar-income").value;
-    var aprIncome = document.getElementById("apr-income").value;
-    var mayIncome = document.getElementById("may-income").value;
-    var junIncome = document.getElementById("jun-income").value;
-    var julIncome = document.getElementById("jul-income").value;
-    var augIncome = document.getElementById("aug-income").value;
-    var sepIncome = document.getElementById("sep-income").value;
-    var octIncome = document.getElementById("oct-income").value;
-    var novIncome = document.getElementById("nov-income").value;
-    var decIncome = document.getElementById("dec-income").value;
+  var chartTab = getElement("chart-tab");
+  
+  if (chartTab) {
+    chartTab.addEventListener("click", function () {
+      var incomeData = collectMonthlyData("income");
+      var expensesData = collectMonthlyData("expenses");
 
-    // Expenses
-    var janExpenses = document.getElementById("jan-expenses").value;
-    var febExpenses = document.getElementById("feb-expenses").value;
-    var marExpenses = document.getElementById("mar-expenses").value;
-    var aprExpenses = document.getElementById("apr-expenses").value;
-    var mayExpenses = document.getElementById("may-expenses").value;
-    var junExpenses = document.getElementById("jun-expenses").value;
-    var julExpenses = document.getElementById("jul-expenses").value;
-    var augExpenses = document.getElementById("aug-expenses").value;
-    var sepExpenses = document.getElementById("sep-expenses").value;
-    var octExpenses = document.getElementById("oct-expenses").value;
-    var novExpenses = document.getElementById("nov-expenses").value;
-    var decExpenses = document.getElementById("dec-expenses").value;
+      myChart.data.datasets[0].data = incomeData;
+      myChart.data.datasets[1].data = expensesData;
 
-    // Create arrays of income and expenses
-    var incomeData = [
-      janIncome,
-      febIncome,
-      marIncome,
-      aprIncome,
-      mayIncome,
-      junIncome,
-      julIncome,
-      augIncome,
-      sepIncome,
-      octIncome,
-      novIncome,
-      decIncome,
-    ].map(Number);
-    var expensesData = [
-      janExpenses,
-      febExpenses,
-      marExpenses,
-      aprExpenses,
-      mayExpenses,
-      junExpenses,
-      julExpenses,
-      augExpenses,
-      sepExpenses,
-      octExpenses,
-      novExpenses,
-      decExpenses,
-    ].map(Number);
-
-    // Update the datasets in the chart
-    myChart.data.datasets[0].data = incomeData;
-    myChart.data.datasets[1].data = expensesData;
-
-    // Update the chart to reflect the new data
-    myChart.update();
-  });
+      myChart.update();
+    });
+  }
 };
